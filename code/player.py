@@ -107,7 +107,7 @@ class Player(pygame.sprite.Sprite):
                 self.seed_index %= len(self.seeds)
                 self.selected_seed = self.seeds[self.seed_index]
 
-    def get_status(self):
+    def get_status(self) -> None:
         # idle
         if not self._is_moving():
             self.status = f"{self.status.split('_')[0]}_idle"
@@ -118,11 +118,11 @@ class Player(pygame.sprite.Sprite):
     def _is_moving(self) -> bool:
         return self.direction.length_squared() > 0
 
-    def update_timers(self):
+    def update_timers(self) -> None:
         for timer in self.timers.values():
             timer.update()
 
-    def move(self, dt: float):
+    def move(self, dt: float) -> None:
         # normalizing direction vector
         if self._is_moving():
             self.direction = self.direction.normalize()

@@ -14,7 +14,7 @@ class Level:
 
         self.setup()
 
-    def setup(self):
+    def setup(self) -> None:
         self.player = Player((SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2), self.all_sprites)
 
     def run(self, dt: float) -> None:
