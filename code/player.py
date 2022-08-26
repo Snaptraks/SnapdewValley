@@ -1,6 +1,6 @@
 import pygame
 
-from settings import ROOT
+from settings import ROOT, LAYERS
 from support import import_folder
 from timer import Timer
 
@@ -15,7 +15,8 @@ class Player(pygame.sprite.Sprite):
 
         # general setup
         self.image = self.animations[self.status][self.frame_index]
-        self.rect = self.image.get_rect(center=position)
+        self.rect: pygame.rect.Rect = self.image.get_rect(center=position)
+        self.z = LAYERS["main"]
 
         # movement attributes
         self.direction = pygame.math.Vector2()
@@ -47,7 +48,7 @@ class Player(pygame.sprite.Sprite):
         ...
 
     def import_assets(self) -> None:
-        self.animations: dict[str, list] = {}
+        self.animations: dict[str, list[pygame.surface.Surface]] = {}
 
         for directory in (ROOT / "graphics/character").iterdir():
             self.animations[directory.name] = import_folder(directory)
