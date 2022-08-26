@@ -15,6 +15,7 @@ class Level:
 
         # sprite groups
         self.all_sprites = CameraGroup()
+        self.collision_sprites = pygame.sprite.Group()
 
         self.setup()
         self.overlay = Overlay(self.player)
@@ -45,7 +46,7 @@ class Level:
             Generic(
                 (x * TILE_SIZE, y * TILE_SIZE),
                 surface,
-                self.all_sprites,
+                [self.all_sprites, self.collision_sprites],
             )
 
         # water
@@ -55,13 +56,36 @@ class Level:
 
         # trees
         for obj in tmx_data.get_layer_by_name("Trees"):
-            Tree((obj.x, obj.y), obj.image, self.all_sprites, name=obj.name)
+            Tree(
+                (obj.x, obj.y),
+                obj.image,
+                [self.all_sprites, self.collision_sprites],
+                name=obj.name,
+            )
 
         # wildflowers
         for obj in tmx_data.get_layer_by_name("Decoration"):
-            WildFlower((obj.x, obj.y), obj.image, self.all_sprites)
+            WildFlower(
+                (obj.x, obj.y), obj.image, [self.all_sprites, self.collision_sprites]
+            )
 
-        self.player = Player((SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2), self.all_sprites)
+        # collision tiles
+        for x, y, surface in tmx_data.get_layer_by_name("Collision").tiles():
+            Generic(
+                (x * TILE_SIZE, y * TILE_SIZE),
+                pygame.Surface((TILE_SIZE, TILE_SIZE)),
+                self.collision_sprites,
+            )
+
+        # Player
+        for obj in tmx_data.get_layer_by_name("Player"):
+            if obj.name == "Start":
+                self.player = Player(
+                    (obj.x, obj.y),
+                    self.all_sprites,
+                    self.collision_sprites,
+                )
+
         Generic(
             position=(0, 0),
             surface=pygame.image.load(
@@ -89,7 +113,9 @@ class CameraGroup(pygame.sprite.Group):
         self.offset.x = player.rect.centerx - SCREEN_WIDTH / 2
         self.offset.y = player.rect.centery - SCREEN_HEIGHT / 2
 
-        sprites = sorted(self.sprites(), key=lambda s: (s.z, s.rect.centery))  # type: ignore # noqa
+        sprites = sorted(
+            self.sprites(), key=lambda s: (s.z, s.rect.centery)  # type: ignore
+        )
         for sprite in sprites:
             offset_rect = sprite.rect.copy()  # type:ignore
             offset_rect.center -= self.offset  # type: ignore

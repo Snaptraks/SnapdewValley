@@ -6,7 +6,12 @@ from timer import Timer
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, position: tuple[int, ...], group: pygame.sprite.Group) -> None:
+    def __init__(
+        self,
+        position: tuple[int, ...],
+        group: pygame.sprite.Group,
+        collision_sprites: pygame.sprite.Group,
+    ) -> None:
         super().__init__(group)
 
         self.import_assets()
@@ -22,6 +27,10 @@ class Player(pygame.sprite.Sprite):
         self.direction = pygame.math.Vector2()
         self.pos = pygame.math.Vector2(self.rect.center)
         self.speed = 200
+
+        # collision
+        self.hitbox = self.rect.copy().inflate((-126, -70))
+        self.collision_sprites = collision_sprites
 
         # timers
         self.timers = {
@@ -123,20 +132,41 @@ class Player(pygame.sprite.Sprite):
         for timer in self.timers.values():
             timer.update()
 
+    def collision(self, direction: str) -> None:
+        for sprite in self.collision_sprites.sprites():
+            if hasattr(sprite, "hitbox"):
+                if sprite.hitbox.colliderect(self.hitbox):  # type: ignore
+                    if direction == "horizontal":
+                        if self.direction.x > 0:  # moving right
+                            self.hitbox.right = sprite.hitbox.left  # type: ignore
+                        if self.direction.x < 0:  # moving left
+                            self.hitbox.left = sprite.hitbox.right  # type: ignore
+                        self.rect.centerx = self.pos.x = self.hitbox.centerx
+
+                    if direction == "vertical":
+                        if self.direction.y > 0:  # moving down
+                            self.hitbox.bottom = sprite.hitbox.top  # type: ignore
+                        if self.direction.y < 0:  # moving up
+                            self.hitbox.top = sprite.hitbox.bottom  # type: ignore
+                        self.rect.centery = self.pos.y = self.hitbox.centery
+
     def move(self, dt: float) -> None:
         # normalizing direction vector
         if self._is_moving():
             self.direction = self.direction.normalize()
 
+        assert self.rect is not None
         # horizontal movement
         self.pos.x += self.direction.x * self.speed * dt
-        if self.rect is not None:
-            self.rect.centerx = int(self.pos.x)
+        self.hitbox.centerx = round(self.pos.x)
+        self.rect.centerx = self.hitbox.centerx
+        self.collision("horizontal")
 
         # vertical movement
         self.pos.y += self.direction.y * self.speed * dt
-        if self.rect is not None:
-            self.rect.centery = int(self.pos.y)
+        self.hitbox.centery = round(self.pos.y)
+        self.rect.centery = self.hitbox.centery
+        self.collision("vertical")
 
     def update(self, dt: float) -> None:
         self._input()

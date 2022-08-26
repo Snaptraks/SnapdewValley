@@ -7,13 +7,16 @@ class Generic(pygame.sprite.Sprite):
         self,
         position: tuple[int, ...],
         surface: pygame.surface.Surface,
-        groups: pygame.sprite.Group,
+        groups: pygame.sprite.Group | list[pygame.sprite.Group],
         z: int = LAYERS["main"],
     ) -> None:
-        super().__init__(groups)
+        super().__init__(groups)  # type: ignore
         self.image = surface
-        self.rect = self.image.get_rect(topleft=position)
+        self.rect: pygame.rect.Rect = self.image.get_rect(topleft=position)
         self.z = z
+        self.hitbox = self.rect.copy().inflate(
+            -self.rect.width * 0.2, -self.rect.height * 0.75
+        )
 
 
 class Water(Generic):
@@ -21,7 +24,7 @@ class Water(Generic):
         self,
         position: tuple[int, ...],
         frames: list[pygame.surface.Surface],
-        groups: pygame.sprite.Group,
+        groups: pygame.sprite.Group | list[pygame.sprite.Group],
     ) -> None:
         # animation setup
         self.frames = frames
@@ -46,9 +49,10 @@ class WildFlower(Generic):
         self,
         position: tuple[int, ...],
         surface: pygame.surface.Surface,
-        groups: pygame.sprite.Group,
+        groups: pygame.sprite.Group | list[pygame.sprite.Group],
     ) -> None:
         super().__init__(position, surface, groups)
+        self.hitbox = self.rect.copy().inflate(-20, -self.rect.height * 0.9)
 
 
 class Tree(Generic):
@@ -56,7 +60,7 @@ class Tree(Generic):
         self,
         position: tuple[int, ...],
         surface: pygame.surface.Surface,
-        groups: pygame.sprite.Group,
+        groups: pygame.sprite.Group | list[pygame.sprite.Group],
         name: str,
     ) -> None:
         super().__init__(position, surface, groups)
