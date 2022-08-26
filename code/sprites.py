@@ -1,5 +1,9 @@
+from random import randint, choice
+
 import pygame
-from settings import LAYERS
+
+from timer import Timer
+from settings import ROOT, LAYERS, APPLE_POS
 
 
 class Generic(pygame.sprite.Sprite):
@@ -64,3 +68,49 @@ class Tree(Generic):
         name: str,
     ) -> None:
         super().__init__(position, surface, groups)
+
+        # tree attributes
+        self.health: int = 5
+        self.alive: bool = True
+        self.stump_surface = pygame.image.load(
+            ROOT / f"graphics/stumps/{name.lower()}.png"
+        ).convert_alpha()
+        self.invul_timer = Timer(200)
+
+        # apples
+        self.apple_surface = pygame.image.load(ROOT / "graphics/fruit/apple.png")
+        self.apple_positions = APPLE_POS[name]
+        self.apple_sprites = pygame.sprite.Group()
+        self.create_fruit()
+
+    def damage(self) -> None:
+        # damaging the tree
+        self.health -= 1
+
+        # remove an apple
+        if len(self.apple_sprites.sprites()) > 0:
+            random_apple = choice(self.apple_sprites.sprites())
+            random_apple.kill()
+
+    def check_death(self) -> None:
+        if self.health <= 0:
+            self.image = self.stump_surface
+            self.rect = self.image.get_rect(midbottom=self.rect.midbottom)
+            self.hitbox = self.rect.copy().inflate(-10, -self.rect.height * 0.6)
+            self.alive = False
+
+    def update(self, dt: float) -> None:
+        if self.alive:
+            self.check_death()
+
+    def create_fruit(self) -> None:
+        for pos in self.apple_positions:
+            if randint(0, 10) < 2:
+                x = self.rect.left + pos[0]
+                y = self.rect.top + pos[1]
+                Generic(
+                    (x, y),
+                    self.apple_surface,
+                    [self.apple_sprites, self.groups()[0]],  # type: ignore
+                    z=LAYERS["fruit"],
+                )
