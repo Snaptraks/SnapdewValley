@@ -15,7 +15,7 @@ class Generic(pygame.sprite.Sprite):
         z: int = LAYERS["main"],
     ) -> None:
         super().__init__(groups)  # type: ignore
-        self.image = surface
+        self.image: pygame.surface.Surface = surface
         self.rect: pygame.rect.Rect = self.image.get_rect(topleft=position)
         self.z = z
         self.hitbox = self.rect.copy().inflate(
@@ -59,6 +59,31 @@ class WildFlower(Generic):
         self.hitbox = self.rect.copy().inflate(-20, -self.rect.height * 0.9)
 
 
+class Particle(Generic):
+    def __init__(
+        self,
+        position: tuple[int, ...],
+        surface: pygame.surface.Surface,
+        groups: pygame.sprite.Group | list[pygame.sprite.Group],
+        z: int = LAYERS["main"],
+        duration: int = 200,
+    ) -> None:
+        super().__init__(position, surface, groups, z)
+        self.start_time = pygame.time.get_ticks()
+        self.duration = duration
+
+        # white surface
+        mask_surface = pygame.mask.from_surface(self.image)
+        new_surface = mask_surface.to_surface()
+        new_surface.set_colorkey((0, 0, 0))
+        self.image = new_surface
+
+    def update(self, dt: float):
+        current_time = pygame.time.get_ticks()
+        if current_time - self.start_time > self.duration:
+            self.kill()
+
+
 class Tree(Generic):
     def __init__(
         self,
@@ -90,10 +115,23 @@ class Tree(Generic):
         # remove an apple
         if len(self.apple_sprites.sprites()) > 0:
             random_apple = choice(self.apple_sprites.sprites())
+            Particle(
+                random_apple.rect.topleft,
+                random_apple.image,
+                self.groups()[0],
+                z=LAYERS["fruit"],
+            )
             random_apple.kill()
 
     def check_death(self) -> None:
         if self.health <= 0:
+            Particle(
+                self.rect.topleft,
+                self.image,
+                self.groups()[0],
+                LAYERS["fruit"],
+                300,
+            )
             self.image = self.stump_surface
             self.rect = self.image.get_rect(midbottom=self.rect.midbottom)
             self.hitbox = self.rect.copy().inflate(-10, -self.rect.height * 0.6)

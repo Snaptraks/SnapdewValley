@@ -1,6 +1,7 @@
 import pygame
 
 from settings import ROOT, LAYERS, PLAYER_TOOL_OFFSET
+from sprites import Tree
 from support import import_folder
 from timer import Timer
 
@@ -60,6 +61,7 @@ class Player(pygame.sprite.Sprite):
 
         if self.selected_tool == "axe":
             for tree in self.tree_sprites.sprites():
+                assert isinstance(tree, Tree)
                 if tree.rect.collidepoint(self.target_pos):
                     tree.damage()
 
@@ -68,7 +70,8 @@ class Player(pygame.sprite.Sprite):
 
     def get_target_position(self) -> None:
         self.target_pos = (
-            self.rect.center + PLAYER_TOOL_OFFSET[self.status.split("_")[0]]  # type: ignore
+            self.rect.center
+            + PLAYER_TOOL_OFFSET[self.status.split("_")[0]]  # type: ignore
         )
 
     def use_seed(self):
