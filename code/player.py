@@ -13,6 +13,7 @@ class Player(pygame.sprite.Sprite):
         group: pygame.sprite.Group,
         collision_sprites: pygame.sprite.Group,
         tree_sprites: pygame.sprite.Group,
+        interaction_sprites: pygame.sprite.Group,
     ) -> None:
         super().__init__(group)
 
@@ -62,6 +63,8 @@ class Player(pygame.sprite.Sprite):
 
         # interaction
         self.tree_sprites = tree_sprites
+        self.interaction_sprites = interaction_sprites
+        self.sleep: bool = False
 
     def use_tool(self):
         if self.selected_tool == "hoe":
@@ -99,7 +102,7 @@ class Player(pygame.sprite.Sprite):
     def _input(self) -> None:
         keys = pygame.key.get_pressed()
 
-        if not self.timers["tool_use"].active:
+        if not self.timers["tool_use"].active and not self.sleep:
             # directions
             if keys[pygame.K_UP] or keys[pygame.K_w]:
                 self.direction.y = -1
@@ -145,6 +148,17 @@ class Player(pygame.sprite.Sprite):
                 self.seed_index += 1
                 self.seed_index %= len(self.seeds)
                 self.selected_seed = self.seeds[self.seed_index]
+
+            if keys[pygame.K_RETURN]:
+                collided_interaction_sprite = pygame.sprite.spritecollide(
+                    self, self.interaction_sprites, False
+                )
+                if collided_interaction_sprite:
+                    if collided_interaction_sprite[0].name == "Trader":
+                        ...
+                    else:
+                        self.status = "left_idle"
+                        self.sleep = True
 
     def get_status(self) -> None:
         # idle

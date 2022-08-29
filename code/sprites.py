@@ -23,6 +23,19 @@ class Generic(pygame.sprite.Sprite):
         )
 
 
+class Interaction(Generic):
+    def __init__(
+        self,
+        position: tuple[int, ...],
+        size: tuple[int, ...],
+        groups: pygame.sprite.Group | list[pygame.sprite.Group],
+        name: str,
+    ) -> None:
+        surface = pygame.Surface(size)
+        super().__init__(position, surface, groups)
+        self.name = name
+
+
 class Water(Generic):
     def __init__(
         self,
