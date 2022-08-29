@@ -65,10 +65,11 @@ class Level:
         # trees
         for obj in tmx_data.get_layer_by_name("Trees"):
             Tree(
-                (obj.x, obj.y),
-                obj.image,
-                [self.all_sprites, self.collision_sprites, self.tree_sprites],
+                position=(obj.x, obj.y),
+                surface=obj.image,
+                groups=[self.all_sprites, self.collision_sprites, self.tree_sprites],
                 name=obj.name,
+                player_add=self.player_add,
             )
 
         # wildflowers
@@ -103,6 +104,9 @@ class Level:
             groups=self.all_sprites,
             z=LAYERS["ground"],
         )
+
+    def player_add(self, item):
+        self.player.item_inventory[item] += 1
 
     def run(self, dt: float) -> None:
         self.display_surface.fill("black")

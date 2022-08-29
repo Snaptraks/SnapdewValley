@@ -91,6 +91,7 @@ class Tree(Generic):
         surface: pygame.surface.Surface,
         groups: pygame.sprite.Group | list[pygame.sprite.Group],
         name: str,
+        player_add,
     ) -> None:
         super().__init__(position, surface, groups)
 
@@ -108,6 +109,8 @@ class Tree(Generic):
         self.apple_sprites = pygame.sprite.Group()
         self.create_fruit()
 
+        self.player_add = player_add
+
     def damage(self) -> None:
         # damaging the tree
         self.health -= 1
@@ -121,6 +124,7 @@ class Tree(Generic):
                 self.groups()[0],
                 z=LAYERS["fruit"],
             )
+            self.player_add("apple")
             random_apple.kill()
 
     def check_death(self) -> None:
@@ -136,6 +140,7 @@ class Tree(Generic):
             self.rect = self.image.get_rect(midbottom=self.rect.midbottom)
             self.hitbox = self.rect.copy().inflate(-10, -self.rect.height * 0.6)
             self.alive = False
+            self.player_add("wood")
 
     def update(self, dt: float) -> None:
         if self.alive:
