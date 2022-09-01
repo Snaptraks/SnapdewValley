@@ -1,6 +1,7 @@
 import pygame
 
 from settings import ROOT, LAYERS, PLAYER_TOOL_OFFSET
+from soil import SoilLayer
 from sprites import Tree
 from support import import_folder
 from timer import Timer
@@ -14,6 +15,7 @@ class Player(pygame.sprite.Sprite):
         collision_sprites: pygame.sprite.Group,
         tree_sprites: pygame.sprite.Group,
         interaction_sprites: pygame.sprite.Group,
+        soil_layer: SoilLayer,
     ) -> None:
         super().__init__(group)
 
@@ -65,10 +67,11 @@ class Player(pygame.sprite.Sprite):
         self.tree_sprites = tree_sprites
         self.interaction_sprites = interaction_sprites
         self.sleep: bool = False
+        self.soil_layer = soil_layer
 
     def use_tool(self):
         if self.selected_tool == "hoe":
-            ...
+            self.soil_layer.get_hit(self.target_pos)
 
         if self.selected_tool == "axe":
             for tree in self.tree_sprites.sprites():
@@ -156,7 +159,7 @@ class Player(pygame.sprite.Sprite):
                 if collided_interaction_sprite:
                     if collided_interaction_sprite[0].name == "Trader":
                         ...
-                    else:
+                    elif collided_interaction_sprite[0].name == "Bed":
                         self.status = "left_idle"
                         self.sleep = True
 

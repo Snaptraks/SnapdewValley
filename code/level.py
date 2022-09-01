@@ -3,17 +3,17 @@ from pytmx.util_pygame import load_pygame
 
 from player import Player
 from overlay import Overlay
+from soil import SoilLayer
 from support import import_folder
 from sprites import Generic, Water, WildFlower, Tree, Interaction
+from transition import Transition
 from settings import (
     ROOT,
     SCREEN_HEIGHT,
     SCREEN_WIDTH,
     LAYERS,
     TILE_SIZE,
-    PLAYER_TOOL_OFFSET,
 )
-from transition import Transition
 
 
 class Level:
@@ -27,6 +27,7 @@ class Level:
         self.tree_sprites = pygame.sprite.Group()
         self.interaction_sprites = pygame.sprite.Group()
 
+        self.soil_layer = SoilLayer(self.all_sprites)
         self.setup()
         self.overlay = Overlay(self.player)
         self.transition = Transition(self.reset, self.player)
@@ -98,6 +99,7 @@ class Level:
                     collision_sprites=self.collision_sprites,
                     tree_sprites=self.tree_sprites,
                     interaction_sprites=self.interaction_sprites,
+                    soil_layer=self.soil_layer,
                 )
 
             if obj.name == "Bed":
@@ -155,15 +157,3 @@ class CameraGroup(pygame.sprite.Group):
             offset_rect = sprite.rect.copy()  # type:ignore
             offset_rect.center -= self.offset  # type: ignore
             self.display_surface.blit(sprite.image, offset_rect)  # type: ignore
-
-            # analytics
-            # if sprite == player:
-            #     pygame.draw.rect(self.display_surface, "red", offset_rect, 5)
-            #     hitbox_rect = player.hitbox.copy()
-            #     hitbox_rect.center = offset_rect.center
-            #     pygame.draw.rect(self.display_surface, "green", hitbox_rect, 5)
-            #     target_pos = (
-            #         offset_rect.center
-            #         + PLAYER_TOOL_OFFSET[player.status.split("_")[0]]
-            #     )
-            #     pygame.draw.circle(self.display_surface, "blue", target_pos, 5)
