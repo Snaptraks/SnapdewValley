@@ -1,8 +1,9 @@
-from re import T
+import random
+
 import pygame
 from pytmx.util_pygame import load_pygame
 
-from support import import_folder_dict
+from support import import_folder, import_folder_dict
 from settings import ROOT, TILE_SIZE, LAYERS
 
 
@@ -19,15 +20,29 @@ class SoilTile(pygame.sprite.Sprite):
         self.z = LAYERS["soil"]
 
 
+class WaterTile(pygame.sprite.Sprite):
+    def __init__(
+        self,
+        position: tuple[int, ...],
+        surface: pygame.surface.Surface,
+        groups: pygame.sprite.Group | list[pygame.sprite.Group],
+    ) -> None:
+        super().__init__(groups)  # type: ignore
+        self.image = surface
+        self.rect = self.image.get_rect(topleft=position)
+        self.z = LAYERS["soil_water"]
+
+
 class SoilLayer:
     def __init__(self, all_sprites: pygame.sprite.Group) -> None:
         # sprite groups
         self.all_sprites = all_sprites
         self.soil_sprites = pygame.sprite.Group()
+        self.water_sprites = pygame.sprite.Group()
 
         # graphics
-        self.soil_surface = pygame.image.load(ROOT / "graphics/soil/o.png")
         self.soil_surfaces = import_folder_dict(ROOT / "graphics/soil")
+        self.water_surfaces = import_folder(ROOT / "graphics/soil_water")
 
         # requirements
         # if the area is farmable
@@ -36,7 +51,7 @@ class SoilLayer:
         self.create_soil_grid()
         self.create_hit_rects()
 
-    def create_soil_grid(self):
+    def create_soil_grid(self) -> None:
         ground = pygame.image.load(ROOT / "graphics/world/ground.png")
         h_tiles, v_tiles = (
             ground.get_width() // TILE_SIZE,
@@ -50,7 +65,7 @@ class SoilLayer:
         ):
             self.grid[y][x].append("F")
 
-    def create_hit_rects(self):
+    def create_hit_rects(self) -> None:
         self.hit_rects: list[pygame.Rect] = []
         for i, row in enumerate(self.grid):
             for j, cell in enumerate(row):
@@ -59,7 +74,7 @@ class SoilLayer:
                     rect = pygame.Rect(x, y, TILE_SIZE, TILE_SIZE)
                     self.hit_rects.append(rect)
 
-    def get_hit(self, point: tuple[float, ...]):
+    def get_hit(self, point: tuple[float, ...]) -> None:
         for rect in self.hit_rects:
             if rect.collidepoint(point):
                 x = rect.x // TILE_SIZE
@@ -69,7 +84,35 @@ class SoilLayer:
                     self.grid[y][x].append("X")
                     self.create_soil_tiles()
 
-    def create_soil_tiles(self):
+    def water(self, point: tuple[float, ...]) -> None:
+        for soil_sprite in self.soil_sprites.sprites():
+            if soil_sprite.rect.collidepoint(point):  # type: ignore
+                rect = soil_sprite.rect
+                assert isinstance(rect, pygame.rect.Rect)
+                # add entry to the soil grid -> "W"
+                x = rect.x // TILE_SIZE
+                y = rect.y // TILE_SIZE
+                self.grid[y][x].append("W")
+
+                # create a water sprite
+                WaterTile(
+                    position=(rect.x, rect.y),
+                    surface=random.choice(self.water_surfaces),
+                    groups=[self.all_sprites, self.water_sprites],
+                )
+
+    def remove_water(self) -> None:
+        # destroy all water sprites
+        for sprite in self.water_sprites.sprites():
+            sprite.kill()
+
+        # clean up the grid
+        for row in self.grid:
+            for cell in row:
+                if "W" in cell:
+                    cell.remove("W")
+
+    def create_soil_tiles(self) -> None:
         self.soil_sprites.empty()
         for i, row in enumerate(self.grid):
             for j, cell in enumerate(row):
@@ -79,7 +122,7 @@ class SoilLayer:
                     t = "X" in self.grid[i - 1][j]
                     b = "X" in self.grid[i + 1][j]
                     r = "X" in row[j + 1]
-                    l = "X" in row[j - 1]
+                    l = "X" in row[j - 1]  # noqa: E741
 
                     tile_type = "o"
 

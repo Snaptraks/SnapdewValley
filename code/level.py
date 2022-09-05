@@ -123,8 +123,12 @@ class Level:
         self.player.item_inventory[item] += 1
 
     def reset(self):
+        # soil
+        self.soil_layer.remove_water()
+
         # apples on the trees
         for tree in self.tree_sprites.sprites():
+            assert isinstance(tree, Tree)
             for apple in tree.apple_sprites.sprites():
                 apple.kill()
             tree.create_fruit()

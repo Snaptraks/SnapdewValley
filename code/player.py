@@ -80,7 +80,7 @@ class Player(pygame.sprite.Sprite):
                     tree.damage()
 
         if self.selected_tool == "water":
-            ...
+            self.soil_layer.water(self.target_pos)
 
     def get_target_position(self) -> None:
         self.target_pos = (
