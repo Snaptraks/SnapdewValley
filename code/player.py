@@ -2,7 +2,7 @@ import pygame
 
 from settings import ROOT, LAYERS, PLAYER_TOOL_OFFSET
 from soil import SoilLayer
-from sprites import Tree
+from sprites import Tree, Interaction
 from support import import_folder
 from timer import Timer
 
@@ -89,7 +89,7 @@ class Player(pygame.sprite.Sprite):
         )
 
     def use_seed(self):
-        ...
+        self.soil_layer.plant_seed(self.target_pos, self.selected_seed)
 
     def import_assets(self) -> None:
         self.animations: dict[str, list[pygame.surface.Surface]] = {}
@@ -157,9 +157,11 @@ class Player(pygame.sprite.Sprite):
                     self, self.interaction_sprites, False
                 )
                 if collided_interaction_sprite:
-                    if collided_interaction_sprite[0].name == "Trader":
+                    collided_sprite = collided_interaction_sprite[0]
+                    assert isinstance(collided_sprite, Interaction)
+                    if collided_sprite.name == "Trader":
                         ...
-                    elif collided_interaction_sprite[0].name == "Bed":
+                    elif collided_sprite.name == "Bed":
                         self.status = "left_idle"
                         self.sleep = True
 
