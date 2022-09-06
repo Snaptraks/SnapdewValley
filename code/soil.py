@@ -44,12 +44,11 @@ class SoilLayer:
         self.soil_surfaces = import_folder_dict(ROOT / "graphics/soil")
         self.water_surfaces = import_folder(ROOT / "graphics/soil_water")
 
-        # requirements
-        # if the area is farmable
-        # if the soil has been watered
-        # if the soil has a plant
         self.create_soil_grid()
         self.create_hit_rects()
+
+        # rain
+        self.raining: bool
 
     def create_soil_grid(self) -> None:
         ground = pygame.image.load(ROOT / "graphics/world/ground.png")
@@ -83,6 +82,8 @@ class SoilLayer:
                 if "F" in self.grid[y][x]:
                     self.grid[y][x].append("X")
                     self.create_soil_tiles()
+                    if self.raining:
+                        self.water_all()
 
     def water(self, point: tuple[float, ...]) -> None:
         for soil_sprite in self.soil_sprites.sprites():
@@ -100,6 +101,17 @@ class SoilLayer:
                     surface=random.choice(self.water_surfaces),
                     groups=[self.all_sprites, self.water_sprites],
                 )
+
+    def water_all(self) -> None:
+        for i, row in enumerate(self.grid):
+            for j, cell in enumerate(row):
+                if "X" in cell and "W" not in cell:
+                    cell.append("W")
+                    WaterTile(
+                        position=(j * TILE_SIZE, i * TILE_SIZE),
+                        surface=random.choice(self.water_surfaces),
+                        groups=[self.all_sprites, self.water_sprites],
+                    )
 
     def remove_water(self) -> None:
         # destroy all water sprites

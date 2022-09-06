@@ -1,8 +1,11 @@
+import random
+
 import pygame
 from pytmx.util_pygame import load_pygame
 
 from player import Player
 from overlay import Overlay
+from sky import Rain
 from soil import SoilLayer
 from support import import_folder
 from sprites import Generic, Water, WildFlower, Tree, Interaction
@@ -31,6 +34,11 @@ class Level:
         self.setup()
         self.overlay = Overlay(self.player)
         self.transition = Transition(self.reset, self.player)
+
+        # sky
+        self.rain = Rain(self.all_sprites)
+        self.raining: bool = random.randint(0, 10) > 3
+        self.soil_layer.raining = self.raining
 
     def setup(self) -> None:
         tmx_data = load_pygame(str(ROOT / "data/map.tmx"))
@@ -126,6 +134,12 @@ class Level:
         # soil
         self.soil_layer.remove_water()
 
+        # randomize the rain
+        self.raining = random.randint(0, 10) > 3
+        self.soil_layer.raining = self.raining
+        if self.raining:
+            self.soil_layer.water_all()
+
         # apples on the trees
         for tree in self.tree_sprites.sprites():
             assert isinstance(tree, Tree)
@@ -140,6 +154,11 @@ class Level:
 
         self.overlay.display()
 
+        # rain
+        if self.raining:
+            self.rain.update()
+
+        # transition overlay
         if self.player.sleep:
             self.transition.play()
 
