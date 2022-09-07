@@ -3,7 +3,25 @@ import pygame
 
 from sprites import Generic
 from support import import_folder
-from settings import ROOT, LAYERS
+from settings import ROOT, LAYERS, SCREEN_WIDTH, SCREEN_HEIGHT
+
+
+class Sky:
+    def __init__(self) -> None:
+        self.display_surface = pygame.display.get_surface()
+        self.full_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.start_color = [255] * 3
+        self.end_color = [38, 101, 189]
+
+    def display(self, dt: float) -> None:
+        for i, value in enumerate(self.end_color):
+            if self.start_color[i] > value:
+                self.start_color[i] -= 2 * dt  # type: ignore
+
+        self.full_surface.fill(self.start_color)
+        self.display_surface.blit(
+            self.full_surface, (0, 0), special_flags=pygame.BLEND_RGBA_MULT
+        )
 
 
 class Drop(Generic):

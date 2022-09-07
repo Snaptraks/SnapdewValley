@@ -16,6 +16,7 @@ class Player(pygame.sprite.Sprite):
         tree_sprites: pygame.sprite.Group,
         interaction_sprites: pygame.sprite.Group,
         soil_layer: SoilLayer,
+        toggle_shop,
     ) -> None:
         super().__init__(group)
 
@@ -62,12 +63,18 @@ class Player(pygame.sprite.Sprite):
             "corn": 0,
             "tomato": 0,
         }
+        self.seed_inventory = {
+            "corn": 5,
+            "tomato": 5,
+        }
+        self.money = 200
 
         # interaction
         self.tree_sprites = tree_sprites
         self.interaction_sprites = interaction_sprites
         self.sleep: bool = False
         self.soil_layer = soil_layer
+        self.toggle_shop = toggle_shop
 
     def use_tool(self):
         if self.selected_tool == "hoe":
@@ -89,7 +96,9 @@ class Player(pygame.sprite.Sprite):
         )
 
     def use_seed(self):
-        self.soil_layer.plant_seed(self.target_pos, self.selected_seed)
+        if self.seed_inventory[self.selected_seed] > 0:
+            self.soil_layer.plant_seed(self.target_pos, self.selected_seed)
+            self.seed_inventory[self.selected_seed] -= 1
 
     def import_assets(self) -> None:
         self.animations: dict[str, list[pygame.surface.Surface]] = {}
@@ -153,6 +162,7 @@ class Player(pygame.sprite.Sprite):
                 self.selected_seed = self.seeds[self.seed_index]
 
             if keys[pygame.K_RETURN]:
+                self.toggle_shop()
                 collided_interaction_sprite = pygame.sprite.spritecollide(
                     self, self.interaction_sprites, False
                 )
@@ -160,7 +170,8 @@ class Player(pygame.sprite.Sprite):
                     collided_sprite = collided_interaction_sprite[0]
                     assert isinstance(collided_sprite, Interaction)
                     if collided_sprite.name == "Trader":
-                        ...
+                        self.toggle_shop()
+
                     elif collided_sprite.name == "Bed":
                         self.status = "left_idle"
                         self.sleep = True
