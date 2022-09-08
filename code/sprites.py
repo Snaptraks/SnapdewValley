@@ -114,7 +114,6 @@ class Tree(Generic):
         self.stump_surface = pygame.image.load(
             ROOT / f"graphics/stumps/{name.lower()}.png"
         ).convert_alpha()
-        self.invul_timer = Timer(200)
 
         # apples
         self.apple_surface = pygame.image.load(ROOT / "graphics/fruit/apple.png")
@@ -124,9 +123,15 @@ class Tree(Generic):
 
         self.player_add = player_add
 
+        # sounds
+        self.axe_sound = pygame.mixer.Sound(ROOT / "audio/axe.mp3")
+
     def damage(self) -> None:
         # damaging the tree
         self.health -= 1
+
+        # play sound
+        self.axe_sound.play()
 
         # remove an apple
         if len(self.apple_sprites.sprites()) > 0:
