@@ -16,7 +16,7 @@ class Sky:
     def display(self, dt: float) -> None:
         for i, value in enumerate(self.end_color):
             if self.start_color[i] > value:
-                self.start_color[i] -= 2 * dt  # type: ignore
+                self.start_color[i] -= 0.5 * dt  # type: ignore
 
         self.full_surface.fill(self.start_color)
         self.display_surface.blit(

@@ -38,7 +38,7 @@ class Level:
 
         # sky
         self.rain = Rain(self.all_sprites)
-        self.raining: bool = random.randint(0, 10) > 3
+        self.raining: bool = random.randint(0, 10) > 7
         self.soil_layer.raining = self.raining
         self.sky = Sky()
 
@@ -204,7 +204,6 @@ class Level:
         # transition overlay
         if self.player.sleep:
             self.transition.play()
-
 
 
 class CameraGroup(pygame.sprite.Group):
