@@ -2,7 +2,6 @@ from random import randint, choice
 
 import pygame
 
-from timer import Timer
 from settings import ROOT, LAYERS, APPLE_POS
 
 
@@ -137,9 +136,9 @@ class Tree(Generic):
         if len(self.apple_sprites.sprites()) > 0:
             random_apple = choice(self.apple_sprites.sprites())
             Particle(
-                random_apple.rect.topleft,
-                random_apple.image,
-                self.groups()[0],
+                random_apple.rect.topleft,  # type: ignore
+                random_apple.image,  # type: ignore
+                self.groups()[0],  # type: ignore
                 z=LAYERS["fruit"],
             )
             self.player_add("apple")
@@ -150,7 +149,7 @@ class Tree(Generic):
             Particle(
                 self.rect.topleft,
                 self.image,
-                self.groups()[0],
+                self.groups()[0],  # type: ignore
                 LAYERS["fruit"],
                 300,
             )
